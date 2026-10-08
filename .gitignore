@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+backend/.env
+frontend/.env
+backend/uploads/products/*
+!backend/uploads/products/.gitkeep
