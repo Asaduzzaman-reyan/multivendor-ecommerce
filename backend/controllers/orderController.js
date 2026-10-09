@@ -121,4 +121,46 @@ function getOrder(req, res, next) {
   }
 }
 
-module.exports = { placeOrder, listOrders, getOrder };
+function cancelOrder(req, res, next) {
+  try {
+    const orderId = Number(req.params.id);
+    if (!Number.isInteger(orderId) || orderId < 1) fail('A valid order id is required');
+    const database = getDatabase();
+    const order = database.prepare(`
+      SELECT id, order_status AS orderStatus
+      FROM orders WHERE id = ? AND user_id = ?
+    `).get(orderId, req.user.id);
+    if (!order) fail('Order not found', 404);
+    if (order.orderStatus !== 'pending') {
+      fail('Only pending orders can be cancelled by the buyer', 409);
+    }
+
+    const items = database.prepare(`
+      SELECT product_id AS productId, quantity
+      FROM order_items WHERE order_id = ?
+    `).all(orderId);
+    database.exec('BEGIN');
+    try {
+      for (const item of items) {
+        const restored = database.prepare(`
+          UPDATE products
+          SET stock = stock + ?, sales_count = MAX(0, sales_count - ?),
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).run(item.quantity, item.quantity, item.productId);
+        if (!restored.changes) fail('Unable to restore cancelled order inventory', 409);
+      }
+      database.prepare('UPDATE orders SET order_status = ? WHERE id = ?')
+        .run('cancelled', orderId);
+      database.exec('COMMIT');
+    } catch (error) {
+      database.exec('ROLLBACK');
+      throw error;
+    }
+    res.json({ orderId, orderStatus: 'cancelled' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { placeOrder, listOrders, getOrder, cancelOrder };

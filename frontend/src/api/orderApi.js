@@ -14,3 +14,8 @@ export async function fetchOrder(id) {
   const response = await api.get(`/orders/${id}`);
   return response.data.order;
 }
+
+export async function cancelOrder(id) {
+  const response = await api.put(`/orders/${id}/cancel`);
+  return response.data;
+}

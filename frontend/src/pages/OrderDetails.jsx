@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { fetchOrder } from '../api/orderApi';
+import { cancelOrder, fetchOrder } from '../api/orderApi';
 
 const orderStages = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
@@ -9,6 +9,7 @@ function OrderDetails() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
   useEffect(() => {
     fetchOrder(id).then(setOrder).catch(() => setError('Unable to load this order.'));
   }, [id]);
@@ -16,10 +17,28 @@ function OrderDetails() {
   if (!order) return <p className="route-status">Loading order...</p>;
   const currentStage = orderStages.indexOf(order.orderStatus);
   const isCancelled = order.orderStatus === 'cancelled';
+  async function handleCancel() {
+    if (!window.confirm('Cancel this pending order?')) return;
+    setCancelLoading(true);
+    setError('');
+    try {
+      await cancelOrder(order.id);
+      setOrder((current) => ({ ...current, orderStatus: 'cancelled' }));
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Unable to cancel this order.');
+    } finally {
+      setCancelLoading(false);
+    }
+  }
   return (
     <section className="content-card wide-card">
       <h1>Order #{order.id}</h1>
       <p>Status: {order.orderStatus} · Payment: {order.paymentStatus}</p>
+      {order.orderStatus === 'pending' && (
+        <button type="button" onClick={handleCancel} disabled={cancelLoading}>
+          {cancelLoading ? 'Cancelling...' : 'Cancel order'}
+        </button>
+      )}
       <section className="order-timeline" aria-label="Order progress">
         <h2>Order progress</h2>
         {isCancelled ? (

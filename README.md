@@ -431,6 +431,14 @@ confirmed, processing, shipped, and delivered orders. Cancelled orders show a
 dedicated cancellation state. The timeline is responsive and collapses into a
 vertical layout on narrow screens.
 
+## Step 25: Buyer order cancellation
+
+Buyers can cancel their own orders while the order is still `pending` from
+the order detail page. Cancellation is performed transactionally: the order
+becomes `cancelled`, purchased stock is restored, and sales counts are
+reversed. Confirmed, processing, shipped, delivered, and already cancelled
+orders cannot be cancelled by the buyer.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:
