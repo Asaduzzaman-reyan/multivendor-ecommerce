@@ -20,6 +20,11 @@ export async function fetchAdminOrders() {
   return response.data.orders;
 }
 
+export async function fetchAdminProducts() {
+  const response = await api.get('/admin/products');
+  return response.data.products;
+}
+
 export async function updateAdminVendorStatus(id, status) {
   const response = await api.put(`/admin/vendors/${id}/status`, { status });
   return response.data;
