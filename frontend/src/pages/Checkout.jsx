@@ -19,6 +19,8 @@ function Checkout() {
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,23 +51,29 @@ function Checkout() {
 
   async function handlePayment() {
     setError('');
+    setPaymentLoading(true);
     try {
       if (!preview) {
         setPreview(await previewCheckout(form));
       }
-
-      async function handlePlaceOrder() {
-        setError('');
-        try {
-          const order = await placeOrder(form);
-          navigate(`/orders/${order.id}`, { replace: true });
-        } catch (requestError) {
-          setError(requestError.response?.data?.message || 'Unable to place order.');
-        }
-      }
       setPayment(await simulatePayment(form));
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to simulate payment.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  }
+
+  async function handlePlaceOrder() {
+    setError('');
+    setOrderLoading(true);
+    try {
+      const order = await placeOrder(form);
+      navigate(`/orders/${order.id}`, { replace: true });
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Unable to place order.');
+    } finally {
+      setOrderLoading(false);
     }
   }
 
@@ -105,10 +113,12 @@ function Checkout() {
           )}
           <div className="checkout-actions">
             <button type="submit">Recalculate total</button>
-            <button type="button" onClick={handlePayment}>Simulate payment</button>
+            <button type="button" onClick={handlePayment} disabled={paymentLoading || orderLoading}>
+              {paymentLoading ? 'Simulating...' : 'Simulate payment'}
+            </button>
           </div>
-          {payment && <p className="success-message">Payment {payment.status}: {payment.reference}. Order placement comes next.</p>}
-          {payment && <button type="button" onClick={handlePlaceOrder}>Place order</button>}
+          {payment && <p className="success-message">Payment {payment.status}: {payment.reference}. Review the details, then place your order.</p>}
+          {payment && <button type="button" onClick={handlePlaceOrder} disabled={orderLoading || paymentLoading}>{orderLoading ? 'Placing order...' : 'Place order'}</button>}
         </form>
         <aside className="checkout-summary">
           <h2>Order summary</h2>

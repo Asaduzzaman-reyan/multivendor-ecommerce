@@ -439,6 +439,14 @@ becomes `cancelled`, purchased stock is restored, and sales counts are
 reversed. Confirmed, processing, shipped, delivered, and already cancelled
 orders cannot be cancelled by the buyer.
 
+## Step 26: Checkout completion
+
+The checkout page now completes the simulated payment and order flow without
+runtime handler errors. Buyers can simulate payment, review the successful
+payment state, and place the order from the same page. Payment and order
+requests show independent loading states, prevent duplicate submissions, and
+navigate to the new order detail page after successful placement.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:
