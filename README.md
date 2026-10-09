@@ -439,6 +439,14 @@ becomes `cancelled`, purchased stock is restored, and sales counts are
 reversed. Confirmed, processing, shipped, delivered, and already cancelled
 orders cannot be cancelled by the buyer.
 
+## Vendor product creation
+
+Approved vendors can open **Add new product** from the vendor dashboard,
+vendor navigation, or the products page. The form captures the product name,
+description, category, optional brand, regular price, discount price, stock,
+and image URL. New products are submitted for admin approval before becoming
+visible in the public catalog.
+
 ## Step 26: Checkout completion
 
 The checkout page now completes the simulated payment and order flow without

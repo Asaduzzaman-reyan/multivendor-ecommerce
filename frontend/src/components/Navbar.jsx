@@ -23,7 +23,13 @@ function Navbar() {
             <Link to="/orders">Orders</Link>
             <Link to="/recommendations">For you</Link>
             <Link to="/wishlist">Wishlist</Link>
-            {user.role === 'vendor' && <Link to="/vendor/dashboard">Vendor</Link>}
+            {user.role === 'vendor' && (
+              <>
+                <Link to="/vendor/dashboard">Vendor</Link>
+                <Link to="/vendor/products">Products</Link>
+                <Link to="/vendor/orders">Orders</Link>
+              </>
+            )}
             {user.role === 'admin' && <Link to="/admin/dashboard">Admin</Link>}
             <span className="welcome">Hi, {user.name}</span>
             <Link to="/profile">Profile</Link>

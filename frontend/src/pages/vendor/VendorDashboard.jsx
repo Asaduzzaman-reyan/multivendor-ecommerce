@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { fetchVendorStatistics } from '../../api/vendorApi';
 
@@ -11,6 +12,11 @@ function VendorDashboard() {
   return (
     <section className="content-card wide-card">
       <h1>Vendor dashboard</h1>
+      <div className="checkout-actions">
+        <Link className="primary-link" to="/vendor/products#new-product">Add new product</Link>
+        <Link className="primary-link secondary-button" to="/vendor/products">Manage products</Link>
+        <Link className="primary-link secondary-button" to="/vendor/orders">View orders</Link>
+      </div>
       {error && <div className="error-message">{error}</div>}
       {statistics && <div className="stats-grid">
         <div><strong>{statistics.productCount}</strong><span>Products</span></div>

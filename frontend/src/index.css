@@ -360,6 +360,21 @@ button:disabled {
   padding: 1rem 0;
 }
 
+.page-heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.page-heading h1 {
+  margin-bottom: 0.25rem;
+}
+
+.page-heading p {
+  margin-top: 0;
+}
+
 .order-timeline {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
@@ -416,6 +431,11 @@ button:disabled {
 }
 
 @media (max-width: 700px) {
+  .page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .checkout-layout {
     grid-template-columns: 1fr;
   }

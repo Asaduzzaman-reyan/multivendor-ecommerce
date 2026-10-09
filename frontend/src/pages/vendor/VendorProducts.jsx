@@ -72,6 +72,11 @@ function VendorProducts() {
     setForm(emptyForm);
   }
 
+  function startNewProduct() {
+    resetForm();
+    document.getElementById('new-product')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
@@ -113,10 +118,16 @@ function VendorProducts() {
 
   return (
     <section className="content-card wide-card">
-      <h1>My products</h1>
+      <div className="page-heading">
+        <div>
+          <h1>My products</h1>
+          <p className="muted-text">Create products with complete pricing, inventory, category, brand, and image details.</p>
+        </div>
+        <button type="button" onClick={startNewProduct}>Add new product</button>
+      </div>
       {error && <div className="error-message" role="alert">{error}</div>}
       {message && <div className="success-message" role="status">{message}</div>}
-      <form className="review-form product-form" onSubmit={handleSubmit}>
+      <form id="new-product" className="review-form product-form" onSubmit={handleSubmit}>
         <h2>{editingId ? 'Edit product' : 'Add product'}</h2>
         <label htmlFor="product-name">Name</label>
         <input id="product-name" name="name" value={form.name} onChange={updateField} maxLength="200" required />
