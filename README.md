@@ -424,6 +424,13 @@ by current stock, shows an in-progress state while the request is submitted,
 and displays backend stock or availability errors. Anonymous visitors receive
 a login prompt instead.
 
+## Step 24: Buyer order progress
+
+Order detail pages now display a buyer-facing progress timeline for pending,
+confirmed, processing, shipped, and delivered orders. Cancelled orders show a
+dedicated cancellation state. The timeline is responsive and collapses into a
+vertical layout on narrow screens.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:
