@@ -4,6 +4,7 @@ const vendorController = require('../controllers/vendorController');
 const productController = require('../controllers/productController');
 const { authenticate } = require('../middleware/authMiddleware');
 const { requireApprovedVendor } = require('../middleware/roleMiddleware');
+const { uploadProductImage } = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 const vendorOnly = [authenticate, requireApprovedVendor];
@@ -14,8 +15,8 @@ router.get('/vendor/orders', ...vendorOnly, vendorController.listOrders);
 router.put('/vendor/orders/:id/status', ...vendorOnly, vendorController.updateOrderStatus);
 router.get('/vendor/statistics', ...vendorOnly, vendorController.getStatistics);
 router.get('/vendor/products', ...vendorOnly, productController.listVendorProducts);
-router.post('/vendor/products', ...vendorOnly, productController.createProduct);
-router.put('/vendor/products/:id', ...vendorOnly, productController.updateVendorProduct);
+router.post('/vendor/products', ...vendorOnly, uploadProductImage, productController.createProduct);
+router.put('/vendor/products/:id', ...vendorOnly, uploadProductImage, productController.updateVendorProduct);
 router.delete('/vendor/products/:id', ...vendorOnly, productController.deleteVendorProduct);
 
 module.exports = router;

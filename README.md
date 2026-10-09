@@ -468,6 +468,11 @@ catalog and attached to the product. The product is submitted for approval;
 once an admin approves it, it appears in the public product list and can be
 added to a buyer cart normally.
 
+Vendor product forms now support direct image uploads instead of requiring an
+image URL. Accepted formats are JPEG, PNG, WEBP, and GIF, with a 5 MB limit.
+Uploaded images are stored under `backend/uploads/products` and served through
+the `/uploads/products/...` path.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:

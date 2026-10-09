@@ -16,12 +16,16 @@ export async function fetchVendorProducts() {
 }
 
 export async function createProduct(payload) {
-  const response = await api.post('/vendor/products', payload);
+  const response = await api.post('/vendor/products', payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 }
 
 export async function updateProduct(id, payload) {
-  const response = await api.put(`/vendor/products/${id}`, payload);
+  const response = await api.put(`/vendor/products/${id}`, payload, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 }
 

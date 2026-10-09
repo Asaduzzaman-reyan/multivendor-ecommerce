@@ -512,6 +512,15 @@ button:disabled {
   width: 4.5rem;
 }
 
+.product-upload-preview {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  height: 9rem;
+  object-fit: contain;
+  width: 9rem;
+}
+
 .catalog-icon {
   align-items: center;
   display: flex;

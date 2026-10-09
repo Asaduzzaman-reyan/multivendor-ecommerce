@@ -26,6 +26,10 @@ function positiveInteger(value, field) {
   return number;
 }
 
+function imagePathFromRequest(req, fallback = null) {
+  return req.file ? `/uploads/products/${req.file.filename}` : (text(req.body.image) || fallback);
+}
+
 function productPayload(body) {
   const name = text(body.name);
   const description = text(body.description);
@@ -50,6 +54,7 @@ function productPayload(body) {
   if (discountPrice !== null && (!Number.isFinite(discountPrice) || discountPrice < 0 || discountPrice > price)) {
     fail('Discount price must be between zero and the original price');
   }
+
   if (!Number.isInteger(stock) || stock < 0) fail('Stock must be a non-negative integer');
 
   return { name, description, categoryId, brandId, brandName, price, discountPrice, stock, image };
@@ -230,6 +235,7 @@ function createProduct(req, res, next) {
     const database = getDatabase();
     ensureReferences(database, payload);
     const vendorId = vendorIdForUser(req.user.id);
+    payload.image = imagePathFromRequest(req);
     database.exec('BEGIN');
     try {
       const brandId = resolveBrandId(database, payload);
@@ -273,6 +279,9 @@ function updateVendorProduct(req, res, next) {
     const database = getDatabase();
     ensureReferences(database, payload);
     const vendorId = vendorIdForUser(req.user.id);
+    const existing = database.prepare('SELECT image FROM products WHERE id = ? AND vendor_id = ?')
+      .get(id, vendorId);
+    payload.image = imagePathFromRequest(req, existing?.image || null);
     database.exec('BEGIN');
     try {
       const brandId = resolveBrandId(database, payload);

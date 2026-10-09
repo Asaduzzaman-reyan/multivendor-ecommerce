@@ -17,7 +17,8 @@ const emptyForm = {
   price: '',
   discountPrice: '',
   stock: '',
-  image: '',
+  image: null,
+  imageUrl: '',
 };
 
 function VendorProducts() {
@@ -28,6 +29,7 @@ function VendorProducts() {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
 
   async function loadData() {
     try {
@@ -48,6 +50,10 @@ function VendorProducts() {
     loadData();
   }, []);
 
+  useEffect(() => () => {
+    if (imagePreview.startsWith('blob:')) URL.revokeObjectURL(imagePreview);
+  }, [imagePreview]);
+
   function updateField(event) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
   }
@@ -63,15 +69,18 @@ function VendorProducts() {
       price: String(product.price),
       discountPrice: product.discountPrice === null ? '' : String(product.discountPrice),
       stock: String(product.stock),
-      image: product.image || '',
+      image: null,
+      imageUrl: product.image || '',
     });
     setError('');
     setMessage('');
+    setImagePreview(product.image || '');
   }
 
   function resetForm() {
     setEditingId(null);
     setForm(emptyForm);
+    setImagePreview('');
   }
 
   function startNewProduct() {
@@ -83,15 +92,17 @@ function VendorProducts() {
     event.preventDefault();
     setError('');
     setMessage('');
-    const payload = {
-      ...form,
-      categoryId: Number(form.categoryId),
-      brandId: form.brandId ? Number(form.brandId) : null,
-      brandName: form.brandId === 'custom' ? form.brandName : '',
-      price: Number(form.price),
-      discountPrice: form.discountPrice === '' ? null : Number(form.discountPrice),
-      stock: Number(form.stock),
-    };
+    const payload = new FormData();
+    payload.append('name', form.name);
+    payload.append('description', form.description);
+    payload.append('categoryId', String(Number(form.categoryId)));
+    payload.append('brandId', form.brandId && form.brandId !== 'custom' ? form.brandId : '');
+    payload.append('brandName', form.brandId === 'custom' ? form.brandName : '');
+    payload.append('price', String(Number(form.price)));
+    payload.append('discountPrice', form.discountPrice === '' ? '' : String(Number(form.discountPrice)));
+    payload.append('stock', String(Number(form.stock)));
+    if (form.image) payload.append('image', form.image);
+    else if (form.imageUrl) payload.append('image', form.imageUrl);
     try {
       if (editingId) {
         await updateProduct(editingId, payload);
@@ -159,8 +170,20 @@ function VendorProducts() {
         <input id="product-discount-price" name="discountPrice" type="number" min="0" step="0.01" value={form.discountPrice} onChange={updateField} />
         <label htmlFor="product-stock">Stock</label>
         <input id="product-stock" name="stock" type="number" min="0" step="1" value={form.stock} onChange={updateField} required />
-        <label htmlFor="product-image">Image URL</label>
-        <input id="product-image" name="image" type="url" value={form.image} onChange={updateField} />
+        <label htmlFor="product-image">Product image</label>
+        <input
+          id="product-image"
+          name="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={(event) => {
+            const file = event.target.files?.[0] || null;
+            setForm((current) => ({ ...current, image: file }));
+            if (file) setImagePreview(URL.createObjectURL(file));
+          }}
+        />
+        <small className="muted-text">JPEG, PNG, WEBP, or GIF up to 5 MB.</small>
+        {imagePreview && <img className="product-upload-preview" src={imagePreview} alt="Selected product preview" />}
         <div>
           <button type="submit">{editingId ? 'Save changes' : 'Create product'}</button>
           {editingId && <button type="button" className="secondary-button" onClick={resetForm}>Cancel</button>}
