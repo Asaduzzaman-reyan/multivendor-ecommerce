@@ -30,10 +30,14 @@ function seed() {
     'INSERT OR IGNORE INTO brands (name, description) VALUES (?, ?)',
   );
   const insertProduct = database.prepare(
-    `INSERT OR IGNORE INTO products
+    `INSERT INTO products
       (vendor_id, category_id, brand_id, name, description, price, discount_price, stock, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved')`,
   );
+  const insertProductIfMissing = (...values) => {
+    const existing = database.prepare('SELECT id FROM products WHERE name = ? LIMIT 1').get(values[3]);
+    if (!existing) insertProduct.run(...values);
+  };
 
   insertUser.run('Platform Admin', '01700000000', 'admin@example.com', 'Dhaka', password, 'admin');
   insertUser.run('Demo Vendor One', '01700000001', 'vendor1@example.com', 'Dhaka', password, 'vendor');
@@ -75,10 +79,17 @@ function seed() {
   const brandId = (name) => database.prepare('SELECT id FROM brands WHERE name = ?').get(name).id;
   const vendorId = (storeName) => database.prepare('SELECT id FROM vendors WHERE store_name = ?').get(storeName).id;
 
-  insertProduct.run(vendorId('Tech Horizon'), categoryId('Electronics'), brandId('NovaTech'), 'NovaTech Wireless Headphones', 'Comfortable wireless headphones with clear sound.', 3200, 2799, 40);
-  insertProduct.run(vendorId('Tech Horizon'), categoryId('Electronics'), brandId('SoundPeak'), 'SoundPeak Bluetooth Speaker', 'Portable speaker with long battery life.', 2400, 1999, 30);
-  insertProduct.run(vendorId('Urban Living'), categoryId('Home & Living'), brandId('HomeNest'), 'HomeNest Desk Lamp', 'Adjustable LED desk lamp for study and work.', 1800, 1499, 25);
-    insertProduct.run(vendorId('Urban Living'), categoryId('Sports'), brandId('FitCore'), 'FitCore Running Shoes', 'Lightweight running shoes with breathable mesh.', 4500, 3899, 20);
+  insertProductIfMissing(vendorId('Tech Horizon'), categoryId('Electronics'), brandId('NovaTech'), 'NovaTech Wireless Headphones', 'Comfortable wireless headphones with clear sound.', 3200, 2799, 40);
+  insertProductIfMissing(vendorId('Tech Horizon'), categoryId('Electronics'), brandId('SoundPeak'), 'SoundPeak Bluetooth Speaker', 'Portable speaker with long battery life.', 2400, 1999, 30);
+  insertProductIfMissing(vendorId('Urban Living'), categoryId('Home & Living'), brandId('HomeNest'), 'HomeNest Desk Lamp', 'Adjustable LED desk lamp for study and work.', 1800, 1499, 25);
+  insertProductIfMissing(vendorId('Urban Living'), categoryId('Sports'), brandId('FitCore'), 'FitCore Running Shoes', 'Lightweight running shoes with breathable mesh.', 4500, 3899, 20);
+  const updateProductImage = database.prepare('UPDATE products SET image = ? WHERE name = ?');
+  [
+    ['/product-images/NovaTech Wireless Headphones.png', 'NovaTech Wireless Headphones'],
+    ['/product-images/SoundPeak Bluetooth Speaker.png', 'SoundPeak Bluetooth Speaker'],
+    ['/product-images/HomeNest Desk Lamp.png', 'HomeNest Desk Lamp'],
+    ['/product-images/FitCore Running Shoes.png', 'FitCore Running Shoes'],
+  ].forEach(([image, name]) => updateProductImage.run(image, name));
     database.exec('COMMIT');
   } catch (error) {
     database.exec('ROLLBACK');
