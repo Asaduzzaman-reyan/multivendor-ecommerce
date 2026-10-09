@@ -416,6 +416,14 @@ Delivered and cancelled orders are terminal. Vendor and admin APIs reject
 skipped, reversed, or terminal-state transitions with a conflict response,
 and the vendor/admin order pages only show valid next statuses.
 
+## Step 23: Product detail cart actions
+
+Authenticated buyers can add products to their cart directly from
+`/products/:id`. The product detail page supports quantity selection bounded
+by current stock, shows an in-progress state while the request is submitted,
+and displays backend stock or availability errors. Anonymous visitors receive
+a login prompt instead.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:

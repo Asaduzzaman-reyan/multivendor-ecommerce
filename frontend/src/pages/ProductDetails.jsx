@@ -6,10 +6,12 @@ import { createReview, fetchReviews } from '../api/reviewApi';
 import { addToWishlist, fetchWishlist, removeFromWishlist } from '../api/wishlistApi';
 import ProductCard from '../components/ProductCard';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 function ProductDetails() {
   const { id } = useParams();
   const { isAuthenticated } = useAuth();
+  const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState({ reviews: [], distribution: {} });
   const [form, setForm] = useState({ orderId: '', rating: '5', comment: '' });
@@ -17,6 +19,8 @@ function ProductDetails() {
   const [message, setMessage] = useState('');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [cartLoading, setCartLoading] = useState(false);
 
   useEffect(() => {
     const wishlistRequest = isAuthenticated ? fetchWishlist() : Promise.resolve(null);
@@ -41,6 +45,20 @@ function ProductDetails() {
         await addToWishlist(product.id);
         setIsWishlisted(true);
         setMessage('Added to your wishlist.');
+      }
+
+      async function handleAddToCart() {
+        setCartLoading(true);
+        setError('');
+        setMessage('');
+        try {
+          await addItem(product.id, quantity);
+          setMessage(`${quantity} item${quantity === 1 ? '' : 's'} added to your cart.`);
+        } catch (requestError) {
+          setError(requestError.response?.data?.message || 'Unable to add this product to your cart.');
+        } finally {
+          setCartLoading(false);
+        }
       }
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to update your wishlist.');
@@ -80,6 +98,22 @@ function ProductDetails() {
           {product.discountPrice !== null && <del>{product.price.toLocaleString()} BDT</del>}
           <p>★ {product.averageRating.toFixed(1)} ({product.reviewCount} reviews)</p>
           <p>{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</p>
+          {isAuthenticated && product.stock > 0 ? (
+            <div className="quantity-form">
+              <label htmlFor="product-quantity">Quantity</label>
+              <input
+                id="product-quantity"
+                type="number"
+                min="1"
+                max={product.stock}
+                value={quantity}
+                onChange={(event) => setQuantity(Math.max(1, Math.min(product.stock, Number(event.target.value) || 1)))}
+              />
+              <button type="button" onClick={handleAddToCart} disabled={cartLoading}>
+                {cartLoading ? 'Adding...' : 'Add to cart'}
+              </button>
+            </div>
+          ) : !isAuthenticated ? <p><Link to="/login">Log in</Link> to add this product to your cart.</p> : null}
           {isAuthenticated ? (
             <button type="button" onClick={handleWishlist} disabled={wishlistLoading}>
               {isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
