@@ -13,6 +13,7 @@ const emptyForm = {
   description: '',
   categoryId: '',
   brandId: '',
+  brandName: '',
   price: '',
   discountPrice: '',
   stock: '',
@@ -58,6 +59,7 @@ function VendorProducts() {
       description: product.description || '',
       categoryId: String(product.category.id),
       brandId: product.brand ? String(product.brand.id) : '',
+      brandName: '',
       price: String(product.price),
       discountPrice: product.discountPrice === null ? '' : String(product.discountPrice),
       stock: String(product.stock),
@@ -85,6 +87,7 @@ function VendorProducts() {
       ...form,
       categoryId: Number(form.categoryId),
       brandId: form.brandId ? Number(form.brandId) : null,
+      brandName: form.brandId === 'custom' ? form.brandName : '',
       price: Number(form.price),
       discountPrice: form.discountPrice === '' ? null : Number(form.discountPrice),
       stock: Number(form.stock),
@@ -141,8 +144,15 @@ function VendorProducts() {
         <label htmlFor="product-brand">Brand</label>
         <select id="product-brand" name="brandId" value={form.brandId} onChange={updateField}>
           <option value="">No brand</option>
+          <option value="custom">Create custom brand</option>
           {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
         </select>
+        {form.brandId === 'custom' && (
+          <>
+            <label htmlFor="product-brand-name">Custom brand name</label>
+            <input id="product-brand-name" name="brandName" value={form.brandName} onChange={updateField} maxLength="120" required />
+          </>
+        )}
         <label htmlFor="product-price">Price</label>
         <input id="product-price" name="price" type="number" min="0" step="0.01" value={form.price} onChange={updateField} required />
         <label htmlFor="product-discount-price">Discount price</label>

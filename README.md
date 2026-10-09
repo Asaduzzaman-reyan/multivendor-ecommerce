@@ -462,6 +462,12 @@ image or brand logo is available. Category icons are selected by category
 type, while brand cards use a branded initial mark. Existing uploaded images
 and logos continue to take priority.
 
+Vendors can select an existing brand or choose **Create custom brand** while
+adding or editing a product. Custom brands are stored in the shared brands
+catalog and attached to the product. The product is submitted for approval;
+once an admin approves it, it appears in the public product list and can be
+added to a buyer cart normally.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:

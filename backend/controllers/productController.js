@@ -30,9 +30,10 @@ function productPayload(body) {
   const name = text(body.name);
   const description = text(body.description);
   const categoryId = Number(body.categoryId);
-  const brandId = body.brandId === undefined || body.brandId === null || body.brandId === ''
+  const brandId = body.brandId === undefined || body.brandId === null || body.brandId === '' || body.brandId === 'custom'
     ? null
     : Number(body.brandId);
+  const brandName = text(body.brandName);
   const price = Number(body.price);
   const discountPrice = body.discountPrice === undefined || body.discountPrice === null || body.discountPrice === ''
     ? null
@@ -43,23 +44,32 @@ function productPayload(body) {
   if (!name || name.length > 200) fail('Product name is required and must be 200 characters or fewer');
   if (!Number.isInteger(categoryId) || categoryId < 1) fail('A valid category is required');
   if (brandId !== null && (!Number.isInteger(brandId) || brandId < 1)) fail('Brand must be a valid id');
+  if (brandName && brandName.length > 120) fail('Custom brand name must be 120 characters or fewer');
+  if (brandId !== null && brandName) fail('Choose an existing brand or enter a custom brand, not both');
   if (!Number.isFinite(price) || price < 0) fail('Price must be a non-negative number');
   if (discountPrice !== null && (!Number.isFinite(discountPrice) || discountPrice < 0 || discountPrice > price)) {
     fail('Discount price must be between zero and the original price');
   }
   if (!Number.isInteger(stock) || stock < 0) fail('Stock must be a non-negative integer');
 
-  return { name, description, categoryId, brandId, price, discountPrice, stock, image };
+  return { name, description, categoryId, brandId, brandName, price, discountPrice, stock, image };
 }
 
-function ensureReferences(payload) {
-  const database = getDatabase();
+function ensureReferences(database, payload) {
   if (!database.prepare('SELECT id FROM categories WHERE id = ?').get(payload.categoryId)) {
     fail('Category not found', 404);
   }
   if (payload.brandId !== null && !database.prepare('SELECT id FROM brands WHERE id = ?').get(payload.brandId)) {
     fail('Brand not found', 404);
   }
+}
+
+function resolveBrandId(database, payload) {
+  if (!payload.brandName) return payload.brandId;
+  database.prepare('INSERT OR IGNORE INTO brands (name, description) VALUES (?, ?)')
+    .run(payload.brandName, `Brand created for ${payload.name}`);
+  const brand = database.prepare('SELECT id FROM brands WHERE name = ?').get(payload.brandName);
+  return Number(brand.id);
 }
 
 const productSelect = `
@@ -217,15 +227,24 @@ function vendorIdForUser(userId) {
 function createProduct(req, res, next) {
   try {
     const payload = productPayload(req.body);
-    ensureReferences(payload);
+    const database = getDatabase();
+    ensureReferences(database, payload);
     const vendorId = vendorIdForUser(req.user.id);
-    const result = getDatabase().prepare(`
+    database.exec('BEGIN');
+    try {
+      const brandId = resolveBrandId(database, payload);
+      const result = database.prepare(`
       INSERT INTO products
         (vendor_id, category_id, brand_id, name, description, price, discount_price, stock, image)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(vendorId, payload.categoryId, payload.brandId, payload.name, payload.description,
-      payload.price, payload.discountPrice, payload.stock, payload.image);
-    res.status(201).json({ message: 'Product submitted for approval', productId: Number(result.lastInsertRowid) });
+      `).run(vendorId, payload.categoryId, brandId, payload.name, payload.description,
+        payload.price, payload.discountPrice, payload.stock, payload.image);
+      database.exec('COMMIT');
+      return res.status(201).json({ message: 'Product submitted for approval', productId: Number(result.lastInsertRowid) });
+    } catch (error) {
+      database.exec('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     next(error);
   }
@@ -251,17 +270,26 @@ function updateVendorProduct(req, res, next) {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) fail('A valid product id is required');
     const payload = productPayload(req.body);
-    ensureReferences(payload);
+    const database = getDatabase();
+    ensureReferences(database, payload);
     const vendorId = vendorIdForUser(req.user.id);
-    const result = getDatabase().prepare(`
+    database.exec('BEGIN');
+    try {
+      const brandId = resolveBrandId(database, payload);
+      const result = database.prepare(`
       UPDATE products SET category_id = ?, brand_id = ?, name = ?, description = ?,
         price = ?, discount_price = ?, stock = ?, image = ?, status = 'pending',
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ? AND vendor_id = ?
-    `).run(payload.categoryId, payload.brandId, payload.name, payload.description,
-      payload.price, payload.discountPrice, payload.stock, payload.image, id, vendorId);
-    if (!result.changes) fail('Product not found', 404);
-    res.json({ message: 'Product updated and submitted for approval' });
+      `).run(payload.categoryId, brandId, payload.name, payload.description,
+        payload.price, payload.discountPrice, payload.stock, payload.image, id, vendorId);
+      if (!result.changes) fail('Product not found', 404);
+      database.exec('COMMIT');
+      res.json({ message: 'Product updated and submitted for approval' });
+    } catch (error) {
+      database.exec('ROLLBACK');
+      throw error;
+    }
   } catch (error) {
     next(error);
   }
