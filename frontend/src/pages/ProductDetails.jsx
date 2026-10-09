@@ -46,24 +46,24 @@ function ProductDetails() {
         setIsWishlisted(true);
         setMessage('Added to your wishlist.');
       }
-
-      async function handleAddToCart() {
-        setCartLoading(true);
-        setError('');
-        setMessage('');
-        try {
-          await addItem(product.id, quantity);
-          setMessage(`${quantity} item${quantity === 1 ? '' : 's'} added to your cart.`);
-        } catch (requestError) {
-          setError(requestError.response?.data?.message || 'Unable to add this product to your cart.');
-        } finally {
-          setCartLoading(false);
-        }
-      }
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to update your wishlist.');
     } finally {
       setWishlistLoading(false);
+    }
+  }
+
+  async function handleAddToCart() {
+    setCartLoading(true);
+    setError('');
+    setMessage('');
+    try {
+      await addItem(product.id, quantity);
+      setMessage(`${quantity} item${quantity === 1 ? '' : 's'} added to your cart.`);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Unable to add this product to your cart.');
+    } finally {
+      setCartLoading(false);
     }
   }
 
