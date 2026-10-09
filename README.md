@@ -455,6 +455,13 @@ payment state, and place the order from the same page. Payment and order
 requests show independent loading states, prevent duplicate submissions, and
 navigate to the new order detail page after successful placement.
 
+## Catalog card icons
+
+Category and top-brand cards display styled icons when no custom category
+image or brand logo is available. Category icons are selected by category
+type, while brand cards use a branded initial mark. Existing uploaded images
+and logos continue to take priority.
+
 ## Step 16: Admin dashboard
 
 Admin-only APIs cover:

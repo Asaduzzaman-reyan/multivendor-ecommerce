@@ -475,8 +475,25 @@ button:disabled {
   background: #f8fafc;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  min-height: 6rem;
-  padding: 1rem;
+  min-height: 11rem;
+  overflow: hidden;
+  padding: 0 1rem 1rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.catalog-card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 10px 22px rgb(37 99 235 / 12%);
+  transform: translateY(-2px);
+}
+
+.catalog-card-visual {
+  align-items: center;
+  background: linear-gradient(135deg, #dbeafe, #ede9fe);
+  display: flex;
+  height: 6rem;
+  justify-content: center;
+  margin: 0 -1rem 0.9rem;
 }
 
 .catalog-card h3 {
@@ -490,9 +507,30 @@ button:disabled {
 }
 
 .catalog-card img {
-  height: 3rem;
+  height: 4.5rem;
   object-fit: contain;
-  width: 3rem;
+  width: 4.5rem;
+}
+
+.catalog-icon {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.catalog-icon-category {
+  font-size: 2.8rem;
+}
+
+.catalog-icon-brand {
+  background: #fff;
+  border: 2px solid rgb(37 99 235 / 20%);
+  border-radius: 1rem;
+  color: #2563eb;
+  font-size: 2rem;
+  font-weight: 800;
+  height: 4rem;
+  width: 4rem;
 }
 
 .auth-card form {
